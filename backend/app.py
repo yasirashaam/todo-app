@@ -14,17 +14,7 @@ tasks = db["tasks"]
 def home():
     return "Backend is running"
 
-@app.route('/add-test')
-def add_test():
-    task = {
-        "title": "My First Task",
-        "category": "General",
-        "completed": False
-    }
-    tasks.insert_one(task)
-    return "Test task added"
-
-# GET tasks
+# ✅ GET tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     all_tasks = []
@@ -33,24 +23,34 @@ def get_tasks():
         all_tasks.append(task)
     return jsonify(all_tasks)
 
-# POST new task
+# ✅ ADD task (with due date)
 @app.route('/tasks', methods=['POST'])
 def create_task():
     data = request.json
     task = {
         "title": data["title"],
         "category": data["category"],
-        "completed": False
+        "completed": False,
+        "dueDate": data.get("dueDate")  # NEW
     }
     tasks.insert_one(task)
     return jsonify({"message": "Task added"})
 
-# DELETE task
+# ✅ DELETE task
 @app.route('/tasks/<id>', methods=['DELETE'])
 def delete_task(id):
     tasks.delete_one({"_id": ObjectId(id)})
-    return jsonify({"message": "Task deleted"})
+    return jsonify({"message": "Deleted"})
 
-# Run app
+# ✅ UPDATE task (complete / undo)
+@app.route('/tasks/<id>', methods=['PUT'])
+def update_task(id):
+    data = request.json
+    tasks.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": data}
+    )
+    return jsonify({"message": "Updated"})
+
 if __name__ == "__main__":
     app.run(debug=True)
